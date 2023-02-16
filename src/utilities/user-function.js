@@ -4,7 +4,16 @@ export const signUp = async (formData) => {
 
         let serverResponse = await axios({
             method: "POST",
-            url: "/api/users", // route to do signup
+            url: "/users/signup", // route to do signup
+            data: formData
+        });
+    return serverResponse;
+}
+export const logIn = async (formData) => {
+
+        let serverResponse = await axios({
+            method: "PUT",
+            url: "/users/login", // route to do signup
             data: formData
         });
     return serverResponse;
