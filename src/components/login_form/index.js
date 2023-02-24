@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-
-import { logIn } from '../../utilities/user-function';
+import { AppContext } from '../../context/app_context';
+import { logIn, getUserFromSession } from '../../utilities/user-function';
 
 
 
 const Login = () => {
+  let {setUser} = useContext(AppContext)
+
 
     const [formState, setFormState] = useState({email: '', password: ''});
     const [error, setError] = useState(null);
+    
 
 useEffect(() => {
   let getSessionInfo = async () => {
-    let res = await axios('/session-info')
-    console.log(res);
+    
   }
   getSessionInfo()
 }, [])
@@ -29,9 +31,11 @@ useEffect(() => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        let response = await logIn(formState)
-
-    }
+        let loginResponse = await logIn(formState);
+        // get session info (user)
+      let user = await getUserFromSession()
+      setUser(user)  
+   }
     let disable = formState.email && formState.password ? false : true;
   return (
     <div>

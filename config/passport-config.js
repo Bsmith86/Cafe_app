@@ -9,7 +9,7 @@ module.exports = async function(passport) {
     passport.use(
         new localStrategy({usernameField: "email"}, async (email, password, done) => {
             const user = await User.findOne({email: email});
-
+            console.log(email, password, user);
             if (!user) {
                 return done(null, false, {message: "Email or password incorrect"});
             }

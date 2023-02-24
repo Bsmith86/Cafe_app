@@ -4,14 +4,15 @@ const logger = require('morgan');
 // cross origin access 
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const User = require('./models/user.js')
+const User = require('./models/user.js');
+const Category = require('./models/category')
+
 const passport = require('passport');
 const session = require('express-session');
-const initializePassport = require('./config/passport-config')
+const initializePassport = require('./config/passport-config.js')
 
 require('dotenv').config();
 require('./config/database.js');
-
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(express.json())
 
 initializePassport(
     passport,
+    // passport tells us that they want a function that will return the correct user given an email
     async email => {
         let user = User.findOne({email: email})
         return user;
@@ -37,28 +39,37 @@ initializePassport(
         let user = User.findById(id);
         return user;
     },
-)
+);
 
 app.use(session({
-    // secure: true,
+    secure: true,
     secret: process.env.SESSION_SECRET,
     resave: true,
     saveUninitialized: true,
-    cookie: { originalMaxAge: 3600000}
+    cookie: { originalMaxAge: 3600000 }
 }))
+
 
 // server build folder
 app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('/get_categories', async (req, res) => {
+    let arrayOfCategories = await Category.find();
+    console.log(arrayOfCategories);
+    res.json(arrayOfCategories)
+})
 
 app.get('/test_route', (req, res) => {
     res.send("good route!")
 })
 
+
 app.get('/session-info', (req, res) => {
     res.json({
         session: req.session
-    })
-})
+    });
+});
+
 
 app.post('/users/signup',async (req, res) => {
     console.log(req.body);
@@ -78,8 +89,9 @@ app.post('/users/signup',async (req, res) => {
 
 app.put('/users/login', async (req, res, next) => {
     console.log(req.body);
-    passport.authenticate('local', (err, user) => {
-        // console.log(message);
+    // passport authentication
+    passport.authenticate("local", (err, user, message) => {
+        console.log(message);
         if (err) throw err;
         if (!user) {
             res.json({
@@ -87,17 +99,16 @@ app.put('/users/login', async (req, res, next) => {
                 user: false
             })
         } else {
-            //delete user.password;
-            req.logIn(user, err =>{
+            // delete user.password;
+            req.logIn(user, err => {
                 if (err) throw err;
                 res.json({
                     message: "successfully authenticated",
-                    //remove user
+                    // remove user
                 })
             })
         }
-    }) (req, res, next)
-
+    })(req, res, next);
 })
 
 // catch all route
